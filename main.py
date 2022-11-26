@@ -168,11 +168,19 @@ def buildTriangles( slice0, slice1 ):
     # This can be done with "brute force" if you wish.
     #
     # [1 mark] 
-   
 
-    # [YOUR CODE HERE]
+    # Assume the starting points are closest, and keep track of its distance 
+    minDistance = math.dist(slice0.verts[0].coords,slice1.verts[0].coords)
+    # Save the index of the closest pair and its value
+    closestPair = ((0, slice0.verts[0]),(0,slice1.verts[0]))
 
-
+    # Cycle through all of the points and see if a shorter distance exists, and if so then save the new minDistance and closestPair
+    for slice0idx, slice0vert in enumerate(slice0.verts):
+        for slice1idx, slice1vert in enumerate(slice1.verts):
+            if(math.dist(slice0vert.coords, slice1vert.coords) < minDistance):
+                minDistance = math.dist(slice0vert.coords, slice1vert.coords)
+                closestPair = ((slice0idx, slice0vert), (slice1idx, slice1vert))
+    
     # Make a cyclic permutation of the vertices of each slice,
     # that starts at the closest vertex in each slice found above.
     #
@@ -181,57 +189,71 @@ def buildTriangles( slice0, slice1 ):
     #
     # [1 mark]
 
-
-    # [YOUR CODE HERE]
-
-
+    # The permutations will be a new array starting at the index of the point in the closest pair, plus all the points before that index
+    # plus the starting index at the end 
+    cycle0 = slice0.verts[closestPair[0][0]:] + slice0.verts[:closestPair[0][0]]  + [closestPair[0][1]] 
+    cycle1 = slice1.verts[closestPair[1][0]:] + slice1.verts[:closestPair[1][0]]  + [closestPair[1][1]] 
+    
     # Set up the 'minArea' array.  The first dimension (rows) of the
     # array corresponds to vertices in slice1.  The second dimension
     # (cols) corresponds to vertices in slice0.
-    #
+    #    
     # Also set up a 'minDir' array, which stores Dir.PREV_ROW or
     # Dir.PREV_COL in each entry [r][c], depending on whether the
     # min-area triangulation ending at [r][c] came from the previous
     # row or previous column.
     #
     # [1 mark]
+    minArea = [] 
+    minDir  = [] 
 
-
-    # [YOUR CODE HERE]
-
-
-    minArea = [[None]] # CHANGE THIS
-    minDir  = [[None]] # CHANGE THIS
-
-
+    # Set up an empty array with an an index for every possible vertex
+    for rowIdx, row in enumerate(cycle1):
+        minArea.append([])
+        minDir.append([])
+        for colIdx, col in enumerate(cycle0):
+            minArea[rowIdx].append([]) 
+            minDir[rowIdx].append([])
+    
     # Fill in the minArea array
-
     minArea[0][0] = 0 # Starting edge has zero area
+    minDir[0][0] = "." # Starting edge uses a period, based on the array example below
 
     # Fill in row 0 of minArea and minDir, since it's a special case as there's no row -1
     #
     # [2 marks]
-
-
-    # [YOUR CODE HERE]
-
+    for col in range(1, len(cycle0)):
+        # The minArea for a given column at row 0 is the sum of the previous minArea (if assigned) + the new triangle made of 
+        # the col coordinate, the coordinate before it, and the row coordinate
+        minArea[0][col] = minArea[0][col-1] + triangleArea(cycle0[col].coords, cycle0[col - 1].coords, cycle1[0].coords)
+        minDir[0][col] = '-'
 
     # Fill in col 0 of minArea and minDir, since it's a special case as there's no col -1
     #
     # [2 marks]
-    
-
-    # [YOUR CODE HERE]
-
+    for row in range(1, len(cycle1)):
+        # The minArea for a given row at column 0  is the sum of the previous minArea (if assigned) + the new triangle made of 
+        # the row coordinate, the coordinate before it, and the col coordinate
+        minArea[row][0] = minArea[row-1][0] + triangleArea(cycle1[row].coords, cycle1[row - 1].coords, cycle0[0].coords)
+        minDir[row][0] = '|'
 
     # Fill in the remaining entries of minArea and minDir.  This is very similar to the above, but more general.
     #
     # [2 marks]
-
-
-    # [YOUR CODE HERE]
-
-
+    for row in range(1, len(cycle1)):
+        for col in range(1, len(cycle0)):
+            # We can only arrive at a given vertex from the vertex above it or to the left of it, so calulcate each respective areas and find the minimum
+            areaAbove = minArea[row-1][col] + triangleArea(cycle0[col].coords,cycle1[row].coords,cycle1[row-1].coords)
+            areaBelow = minArea[row][col-1] + triangleArea(cycle1[row].coords,cycle0[col].coords,cycle0[col-1].coords)
+            # In the class slides it says to use a minimum function, but we also need to know *which* item is the minimum to assign a direction
+            if (areaAbove < areaBelow):
+               minArea[row][col] = areaAbove
+               minDir[row][col] = "|"
+            else:
+               minArea[row][col] = areaBelow
+               minDir[row][col] = "-"
+                
+    
     # It's useful for debugging at this point to print out the minArea
     # and minDir arrays together.  For example, print a table in which
     # each element contains the integer minArea and a line (- or |) to
@@ -281,12 +303,25 @@ def buildTriangles( slice0, slice1 ):
 
     triangles = []
 
+    # Start at end of array and walk back up it
+    currCol = len(cycle0) - 1
+    currRow = len(cycle1) - 1
 
-    # [YOUR CODE HERE]
-
+    # Continue walking until at the beginning of the array
+    while((currRow, currCol) != (0, 0)):
+        # If the minimum area comes from the triangle to the left, create a triangle that is from the current col point, row point, and the col
+        # point to the left
+        if(minDir[currRow][currCol] == '-'):
+            triangles.append(Triangle([cycle0[currCol], cycle1[currRow], cycle0[currCol - 1]]))
+            currCol -= 1
+        # Else the minimum area comes from the triangle above, create a triangle that is from the current col point, row point, and the row
+        # point above
+        else:
+            triangles.append(Triangle([cycle0[currCol], cycle1[currRow], cycle1[currRow - 1]]))
+            currRow -= 1
+    
 
     # Return a list of the triangles that you constructed
-    
     return triangles
 
 
@@ -798,6 +833,7 @@ def main():
     if len(allSlices) < 2:
         return
 
+    
     # Main event loop
 
     display( window )
