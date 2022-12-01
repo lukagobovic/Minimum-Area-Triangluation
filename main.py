@@ -308,14 +308,14 @@ def buildTriangles( slice0, slice1 ):
     currRow = len(cycle1) - 1
 
     # Continue walking until at the beginning of the array
-    while((currRow, currCol) != (0, 0)):
+    while(currRow != 0 and currCol != 0):
         # If the minimum area comes from the triangle to the left, create a triangle that is from the current col point, row point, and the col
-        # point to the left
+        # point to the left and then move the column coordinate to the left
         if(minDir[currRow][currCol] == '-'):
             triangles.append(Triangle([cycle0[currCol], cycle1[currRow], cycle0[currCol - 1]]))
             currCol -= 1
         # Else the minimum area comes from the triangle above, create a triangle that is from the current col point, row point, and the row
-        # point above
+        # point above and then move the row coordinate up
         else:
             triangles.append(Triangle([cycle0[currCol], cycle1[currRow], cycle1[currRow - 1]]))
             currRow -= 1
