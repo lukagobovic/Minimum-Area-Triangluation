@@ -171,8 +171,10 @@ def buildTriangles( slice0, slice1 ):
 
     # Assume the starting points are closest, and keep track of its distance 
     minDistance = math.dist(slice0.verts[0].coords,slice1.verts[0].coords)
-    # Save the index of the closest pair and its value
+    # Save the index of the closest point from each slice and its respective value
     closestPair = ((0, slice0.verts[0]),(0,slice1.verts[0]))
+    # closestPair[0] is for slice0 information, closestPoint[1] is for slice1 information 
+    
 
     # Cycle through all of the points and see if a shorter distance exists, and if so then save the new minDistance and closestPair
     for slice0idx, slice0vert in enumerate(slice0.verts):
@@ -209,11 +211,13 @@ def buildTriangles( slice0, slice1 ):
 
     # Set up an empty array with an an index for every possible vertex
     for rowIdx, row in enumerate(cycle1):
-        minArea.append([])
-        minDir.append([])
+        # Add an empty array for each row
+        minArea += []
+        minDir += []
         for colIdx, col in enumerate(cycle0):
-            minArea[rowIdx].append([]) 
-            minDir[rowIdx].append([])
+            # Fill each row with empty arrays for the number of columns
+            minArea[rowIdx] += [] 
+            minDir[rowIdx] += []
     
     # Fill in the minArea array
     minArea[0][0] = 0 # Starting edge has zero area
@@ -222,6 +226,8 @@ def buildTriangles( slice0, slice1 ):
     # Fill in row 0 of minArea and minDir, since it's a special case as there's no row -1
     #
     # [2 marks]
+
+    # Since we are referencing col-1, we need to start at index 1 to ensure that we are always referencing the correct element
     for col in range(1, len(cycle0)):
         # The minArea for a given column at row 0 is the sum of the previous minArea (if assigned) + the new triangle made of 
         # the col coordinate, the coordinate before it, and the row coordinate
@@ -231,6 +237,8 @@ def buildTriangles( slice0, slice1 ):
     # Fill in col 0 of minArea and minDir, since it's a special case as there's no col -1
     #
     # [2 marks]
+
+    # Since we are referencing row-1, we need to start at index 1 to ensure that we are always referencing the correct element
     for row in range(1, len(cycle1)):
         # The minArea for a given row at column 0  is the sum of the previous minArea (if assigned) + the new triangle made of 
         # the row coordinate, the coordinate before it, and the col coordinate
@@ -308,13 +316,13 @@ def buildTriangles( slice0, slice1 ):
     currRow = len(cycle1) - 1
 
     # Continue walking until at the beginning of the array
-    while(currRow != 0 and currCol != 0):
-        # If the minimum area comes from the triangle to the left, create a triangle that is from the current col point, row point, and the col
+    while(currRow != 0 or currCol != 0):
+        # If the minimum area comes from the triangle to the left, create a triangle that is from the current col point, current row point, and the col
         # point to the left and then move the column coordinate to the left
         if(minDir[currRow][currCol] == '-'):
             triangles.append(Triangle([cycle0[currCol], cycle1[currRow], cycle0[currCol - 1]]))
             currCol -= 1
-        # Else the minimum area comes from the triangle above, create a triangle that is from the current col point, row point, and the row
+        # Else the minimum area comes from the triangle above, create a triangle that is from the current col point, current row point, and the row
         # point above and then move the row coordinate up
         else:
             triangles.append(Triangle([cycle0[currCol], cycle1[currRow], cycle1[currRow - 1]]))
