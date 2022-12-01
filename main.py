@@ -212,12 +212,12 @@ def buildTriangles( slice0, slice1 ):
     # Set up an empty array with an an index for every possible vertex
     for rowIdx, row in enumerate(cycle1):
         # Add an empty array for each row
-        minArea += []
-        minDir += []
+        minArea.append([])
+        minDir.append([])
         for colIdx, col in enumerate(cycle0):
-            # Fill each row with empty arrays for the number of columns
-            minArea[rowIdx] += [] 
-            minDir[rowIdx] += []
+            # Inside each empty array, fill with empty values for the number of columns
+            minArea[rowIdx].append('_') 
+            minDir[rowIdx].append('_')
     
     # Fill in the minArea array
     minArea[0][0] = 0 # Starting edge has zero area
