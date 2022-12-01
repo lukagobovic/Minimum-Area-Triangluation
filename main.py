@@ -290,7 +290,6 @@ def buildTriangles( slice0, slice1 ):
     #
     # [0 marks]
 
-
     # [YOUR CODE HERE, OPTIONALLY]
 
     
