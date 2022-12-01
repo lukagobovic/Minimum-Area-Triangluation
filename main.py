@@ -216,8 +216,8 @@ def buildTriangles( slice0, slice1 ):
         minDir.append([])
         for colIdx, col in enumerate(cycle0):
             # Inside each empty array, fill with empty values for the number of columns
-            minArea[rowIdx].append('_') 
-            minDir[rowIdx].append('_')
+            minArea[rowIdx] += ['_'] 
+            minDir[rowIdx]+= ['_']
     
     # Fill in the minArea array
     minArea[0][0] = 0 # Starting edge has zero area
